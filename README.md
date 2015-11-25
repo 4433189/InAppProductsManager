@@ -19,6 +19,17 @@ This is exactly what original StoreManager able to do. However, I wanted it to b
 
 When manager encounters an error, it schedules itself for an attempt to retry after 15 seconds. In case, something calls `fetchProductInformationForIds:` during this "waiting", the manager resets auto-retry and starts the request from scratch.
 
+```objective-c
+- (void)fetchProductInformation
+{
+    NSArray* productIds = @[
+                          @"com.example.inapp.car.bmw.x6_m_2016",
+                          @"com.example.inapp.car.mercedes.gle450_amg_coupe_2016"
+                          ];
+    [[StoreManager sharedInstance] fetchProductInformationForIds:productIds];
+}
+```
+
 The manager notifies observers via `NSNotificationCenter`, so to get notifications, component has to subscribe 
 
 ```objective-c
@@ -117,3 +128,4 @@ On the other hand, your model could be extended in this way
 * I plan to add some kind of **auto-refresh functionality** in the future, so the manager could be told once to maintain the product information refreshed during the app being active.
 * Add code to demonstrate the usage
 * Add CocoaPods support
+* Add UintTests
