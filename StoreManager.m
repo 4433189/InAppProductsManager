@@ -79,6 +79,9 @@ NSString * const StoreManagerDidChangeStatusNotification = @"StoreManagerDidChan
     
     self.requestedProductIdentifiers = [productIds copy];
     
+    [self.availableProducts removeAllObjects];
+    [self.invalidProductIds removeAllObjects];
+    
     [self startProductRequestWithProductIds:self.requestedProductIdentifiers];
 }
 
