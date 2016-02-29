@@ -1,21 +1,21 @@
 # In-App Products Manager
 
-This is a slightly modified version of [StoreManager.m](https://developer.apple.com/library/ios/samplecode/sc1991/Listings/iOSInAppPurchases_iOSInAppPurchases_StoreManager_m.html#//apple_ref/doc/uid/DTS40014726-iOSInAppPurchases_iOSInAppPurchases_StoreManager_m-DontLinkElementID_24) / [.h](https://developer.apple.com/library/ios/samplecode/sc1991/Listings/iOSInAppPurchases_iOSInAppPurchases_StoreManager_h.html#//apple_ref/doc/uid/DTS40014726-iOSInAppPurchases_iOSInAppPurchases_StoreManager_h-DontLinkElementID_23) included in [StoreKitSuite](https://www.google.com.ua/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwjN8LjUqKvJAhWIlHIKHdu5AOIQFggbMAA&url=https%3A%2F%2Fdeveloper.apple.com%2Flibrary%2Fios%2Fsamplecode%2Fsc1991%2FIntroduction%2FIntro.html&usg=AFQjCNEPjfoc5IqcDDdb1UIQe2rnhcXQ9Q&sig2=xnuEyG5khlKNypOaJZfQaA)  sample code. This variant supports auto-retry and has slightly changed notifications behaviour.
+This is a modified version of [StoreManager.m](https://developer.apple.com/library/ios/samplecode/sc1991/Listings/iOSInAppPurchases_iOSInAppPurchases_StoreManager_m.html#//apple_ref/doc/uid/DTS40014726-iOSInAppPurchases_iOSInAppPurchases_StoreManager_m-DontLinkElementID_24) / [.h](https://developer.apple.com/library/ios/samplecode/sc1991/Listings/iOSInAppPurchases_iOSInAppPurchases_StoreManager_h.html#//apple_ref/doc/uid/DTS40014726-iOSInAppPurchases_iOSInAppPurchases_StoreManager_h-DontLinkElementID_23) included in [StoreKitSuite](https://www.google.com.ua/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwjN8LjUqKvJAhWIlHIKHdu5AOIQFggbMAA&url=https%3A%2F%2Fdeveloper.apple.com%2Flibrary%2Fios%2Fsamplecode%2Fsc1991%2FIntroduction%2FIntro.html&usg=AFQjCNEPjfoc5IqcDDdb1UIQe2rnhcXQ9Q&sig2=xnuEyG5khlKNypOaJZfQaA)  sample code. This "fork" supports auto-retry and has slightly changed notifications behaviour.
 
 ## Purpose
 
-When using In-App Purchase, before buying things, Products have to be retrieved from the App Store. As suggested by the documentation before user ever come up to your app's In-App Store, the products information has to be alredy there.
+When using In-App Purchase, before buying things, Products (by ProductIDs) have to be retrieved from the App Store. As suggested by the documentation before user ever come up to your app's In-App Store UI, the products information has to be alredy there. StoreManager does just that!
 
 ## Architecture Decision
 
-In terms of architecture, some kind of manager needed to accomplish that. The manager stays in memmory during the lifetime of an app session and can be accessed anytime while the app is running. Accesment is made in two ways:
+In terms of architecture, some kind of manager needed to accomplish that. The manager stays in memmory during the lifetime of an app session and can be accessed anytime while the app is running (thus Singleton pattern is chosen). Using the instans falls in two ways:
 
-1. Control fetching
-2. Retrieve products information
+1. Ask for `SKPorduct` fetching
+2. Be notified upon receiving `SKPorduct` array
 
 ## Usage
 
-This is exactly what original StoreManager able to do. However, I wanted it to be more robust and complex :) The manager's `fetchProductInformationForIds:` method might be called as many times as you need the products information to be refreshed. 
+This is exactly what original StoreManager able to do. However, I wanted it to be more robust, but yet simple to use. The manager's `fetchProductInformationForIds:` method might be called as many times as you need the products information to be refreshed. 
 
 When manager encounters an error, it schedules itself for an attempt to retry after 15 seconds. In case, something calls `fetchProductInformationForIds:` during this "waiting", the manager resets auto-retry and starts the request from scratch.
 
@@ -30,7 +30,7 @@ When manager encounters an error, it schedules itself for an attempt to retry af
 }
 ```
 
-The manager notifies observers via `NSNotificationCenter`, so to get notifications, component has to subscribe 
+The manager notifies observers via `NSNotificationCenter`, so to get notifications, an observer has to subscribe to `StoreManagerDidChangeStatusNotification` notification:
 
 ```objective-c
 [[NSNotificationCenter defaultCenter] addObserver:self
@@ -38,7 +38,7 @@ The manager notifies observers via `NSNotificationCenter`, so to get notificatio
                                                  name:StoreManagerDidChangeStatusNotification
                                                object:[StoreManager sharedInstance]];
 ```
-Next, implement the selector
+Next, implement the notification callback
 
 ```objective-c
 -(void)handleStoreManagerDidChangeStatusNotification:(NSNotification *)notification
@@ -125,7 +125,6 @@ On the other hand, your model could be extended in this way
 
 ##TODO
 
-* I plan to add some kind of **auto-refresh functionality** in the future, so the manager could be told once to maintain the product information refreshed during the app being active.
-* Add code to demonstrate the usage
+* Add a sample project to demonstrate usage
 * Add CocoaPods support
-* Add UintTests
+* Add UnitTests
